@@ -1,0 +1,50 @@
+{
+  "_comment": "Authoritative cross-platform scoring fixtures for Pit Stop. The Go, Swift and Kotlin test suites all read THIS file, so the three implementations cannot silently drift. See PROJECT.md for the prose specification.",
+  "reaction": [
+    { "name": "typical human reaction",   "greenToTapMs": 243,   "expected": 243 },
+    { "name": "very fast",                "greenToTapMs": 112,   "expected": 112 },
+    { "name": "at the lower bound",       "greenToTapMs": 50,    "expected": 50 },
+    { "name": "at the upper bound",       "greenToTapMs": 10000, "expected": 10000 },
+    { "name": "distracted player",        "greenToTapMs": 1870,  "expected": 1870 }
+  ],
+  "fill": [
+    { "name": "exact hit",                "dispensedCents": 1000, "goalCents": 1000, "expected": 0 },
+    { "name": "under by 21 cents",        "dispensedCents": 979,  "goalCents": 1000, "expected": 21 },
+    { "name": "over by 35 cents",         "dispensedCents": 1035, "goalCents": 1000, "expected": 35 },
+    { "name": "over by a dollar",         "dispensedCents": 1600, "goalCents": 1500, "expected": 100 },
+    { "name": "wildly under",             "dispensedCents": 212,  "goalCents": 2000, "expected": 1788 },
+    { "name": "smallest goal, over",      "dispensedCents": 507,  "goalCents": 500,  "expected": 7 }
+  ],
+  "pitstop": [
+    { "name": "clean run, no mis-taps",   "elapsedMs": 2140, "misTaps": 0, "expected": 2140 },
+    { "name": "one mis-tap",              "elapsedMs": 2140, "misTaps": 1, "expected": 3140 },
+    { "name": "three mis-taps",           "elapsedMs": 1890, "misTaps": 3, "expected": 4890 },
+    { "name": "fast run with a fumble",   "elapsedMs": 1203, "misTaps": 2, "expected": 3203 },
+    { "name": "at the lower bound",       "elapsedMs": 300,  "misTaps": 0, "expected": 300 }
+  ],
+  "bounds": [
+    { "game": "reaction", "score": 49,     "inBounds": false },
+    { "game": "reaction", "score": 50,     "inBounds": true  },
+    { "game": "reaction", "score": 10000,  "inBounds": true  },
+    { "game": "reaction", "score": 10001,  "inBounds": false },
+    { "game": "fill",     "score": -1,     "inBounds": false },
+    { "game": "fill",     "score": 0,      "inBounds": true  },
+    { "game": "fill",     "score": 100000, "inBounds": true  },
+    { "game": "fill",     "score": 100001, "inBounds": false },
+    { "game": "pitstop",  "score": 299,    "inBounds": false },
+    { "game": "pitstop",  "score": 300,    "inBounds": true  },
+    { "game": "pitstop",  "score": 120000, "inBounds": true  },
+    { "game": "pitstop",  "score": 120001, "inBounds": false }
+  ],
+  "format": [
+    { "game": "reaction", "score": 243,   "expected": "243 ms" },
+    { "game": "reaction", "score": 1870,  "expected": "1870 ms" },
+    { "game": "fill",     "score": 0,     "expected": "$0.00 off" },
+    { "game": "fill",     "score": 7,     "expected": "$0.07 off" },
+    { "game": "fill",     "score": 100,   "expected": "$1.00 off" },
+    { "game": "fill",     "score": 1788,  "expected": "$17.88 off" },
+    { "game": "pitstop",  "score": 2140,  "expected": "2.140s" },
+    { "game": "pitstop",  "score": 300,   "expected": "0.300s" },
+    { "game": "pitstop",  "score": 12045, "expected": "12.045s" }
+  ]
+}
