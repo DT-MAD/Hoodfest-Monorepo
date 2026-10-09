@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The booth leaderboard runs on a laptop on the venue's network, reached over
+  plain HTTP at an address nobody knows until event morning. Android blocks
+  cleartext by default.
+
+  This permits it for local addresses only — the emulator's host alias and the
+  private IPv4 ranges a venue router hands out. Anything on the public internet
+  still requires HTTPS, which is the point: this is the narrow exception, not
+  android:usesCleartextTraffic="true" across the board.
+
+  If the server is ever deployed to a public host, give it a certificate and
+  this file can be deleted.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- The host machine, as seen from the Android emulator. -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+
+        <!-- Private ranges a venue router hands out. -->
+        <domain includeSubdomains="true">192.168.0.0</domain>
+        <domain includeSubdomains="true">10.0.0.0</domain>
+        <domain includeSubdomains="true">172.16.0.0</domain>
+
+        <!-- mDNS names, if the laptop is addressed by hostname. -->
+        <domain includeSubdomains="true">local</domain>
+    </domain-config>
+</network-security-config>
