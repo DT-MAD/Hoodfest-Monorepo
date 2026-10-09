@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pit Stop Leaderboard</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%2315191F'/><path d='M0 0h4v4H0zm8 0h4v4H8zM4 4h4v4H4zm8 0h4v4h-4zM0 8h4v4H0zm8 0h4v4H8zM4 12h4v4H4zm8 0h4v4h-4z' fill='%23F7C843'/></svg>">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead__flag" aria-hidden="true"></div>
+  <div class="masthead__text">
+    <h1>Pit&nbsp;Stop</h1>
+    <p>Dixie Tech &middot; Mobile App Development</p>
+  </div>
+  <div class="masthead__status">
+    <span id="status-dot" class="dot" data-state="connecting" aria-hidden="true"></span>
+    <span id="status-text" class="status-text" role="status">Connecting…</span>
+  </div>
+</header>
+
+<main id="boards" class="boards">
+  {{range .Games}}
+  <section class="board" data-game="{{.}}" aria-labelledby="title-{{.}}">
+    <header class="board__head">
+      <h2 id="title-{{.}}">{{.Title}}</h2>
+      <p class="board__tagline">{{.Tagline}}</p>
+    </header>
+    <ol class="board__top" data-role="top" aria-label="{{.Title}} top scores"></ol>
+    <div class="board__recent">
+      <h3>Just played</h3>
+      <ul data-role="recent" aria-label="{{.Title}} most recent scores"></ul>
+    </div>
+    <p class="board__total" data-role="total"></p>
+  </section>
+  {{end}}
+</main>
+
+<footer class="footer">
+  <p>Lower is better on every board. Built by students, in Swift, Kotlin and Go.</p>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

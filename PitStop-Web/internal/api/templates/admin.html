@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pit Stop Moderation</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="admin">
+
+<header class="masthead">
+  <div class="masthead__flag" aria-hidden="true"></div>
+  <div class="masthead__text">
+    <h1>Moderation</h1>
+    <p>Remove anything the word filter missed</p>
+  </div>
+  <div class="masthead__status">
+    <a class="link" href="/">&larr; Back to the board</a>
+  </div>
+</header>
+
+<form id="unlock" class="unlock">
+  <label for="admin-key">Admin key</label>
+  <input id="admin-key" type="password" autocomplete="off" placeholder="ADMIN_KEY" required>
+  <button type="submit" class="btn">Unlock</button>
+  <p id="unlock-error" class="unlock__error" role="alert" hidden></p>
+</form>
+
+<main id="admin-boards" class="boards" hidden></main>
+
+<script src="/static/admin.js"></script>
+</body>
+</html>
