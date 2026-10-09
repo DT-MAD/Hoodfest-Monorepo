@@ -1,5 +1,6 @@
 package app.recompile.pitstop.data
 
+import android.util.Log
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -42,8 +43,9 @@ class LeaderboardApi(private val config: AppConfig) {
      * local board instead.
      */
     private companion object {
-        const val CONNECT_TIMEOUT_MS = 4_000
-        const val READ_TIMEOUT_MS = 5_000
+        const val TAG = "PitStop"
+        const val CONNECT_TIMEOUT_MS = 5_000
+        const val READ_TIMEOUT_MS = 8_000
     }
 
     /** Fetches every board. */
@@ -125,9 +127,13 @@ class LeaderboardApi(private val config: AppConfig) {
                     onSuccess = { Result.Ok(it) },
                     onFailure = { Result.Err(Failure.MalformedResponse) },
                 )
-        } catch (_: IOException) {
+        } catch (error: IOException) {
+            // The player never sees this, but the operator needs it: "cannot
+            // reach the server" is undiagnosable without the underlying cause.
+            Log.w(TAG, "$method $base$path failed", error)
             Result.Err(Failure.Unreachable)
-        } catch (_: SecurityException) {
+        } catch (error: SecurityException) {
+            Log.w(TAG, "$method $base$path was blocked", error)
             Result.Err(Failure.Unreachable)
         } finally {
             connection?.disconnect()

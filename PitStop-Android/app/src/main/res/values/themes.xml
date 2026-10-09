@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.PitStop" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+      The launch theme, shown for the instant before Compose draws. It is dark
+      with the app's own background colour: the template's Material.Light would
+      flash white first, which looks like a bug on a screen in public.
+    -->
+    <style name="Theme.PitStop" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/asphalt</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>

@@ -1,5 +1,6 @@
 package app.recompile.pitstop.data
 
+import android.util.Log
 import app.recompile.pitstop.core.GameId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -56,6 +57,11 @@ class LeaderboardRepository(
                 _source.value = Source.SERVER
             }
             is LeaderboardApi.Result.Err -> {
+                // The visitor sees nothing but the local board, by design. The
+                // operator, who is the one who can fix it, gets a log line:
+                // "no scores are showing" is otherwise impossible to diagnose
+                // at a booth.
+                Log.w(TAG, "Falling back to the local board: ${result.failure.message}")
                 _boards.value = local.boards()
                 _source.value = Source.DEVICE
             }
@@ -84,6 +90,7 @@ class LeaderboardRepository(
                 Outcome(result.value.entry, Source.SERVER)
             }
             is LeaderboardApi.Result.Err -> {
+                Log.w(TAG, "Score saved locally only: ${result.failure.message}")
                 mutex.withLock {
                     _boards.value = local.boards()
                     _source.value = Source.DEVICE
@@ -91,6 +98,10 @@ class LeaderboardRepository(
                 Outcome(localEntry, Source.DEVICE)
             }
         }
+    }
+
+    private companion object {
+        const val TAG = "PitStop"
     }
 
     /** Clears the device's scores. Server entries are untouched. */
