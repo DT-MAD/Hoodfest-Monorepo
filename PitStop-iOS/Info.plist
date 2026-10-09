@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  The booth leaderboard runs on a laptop on the venue's network, reached
+	  over plain HTTP at an address nobody knows until event morning. App
+	  Transport Security blocks that by default.
+
+	  NSAllowsLocalNetworking permits cleartext to local addresses only —
+	  .local names, and link-local and private IPv4 ranges such as 192.168.x.x.
+	  Connections to the public internet still require HTTPS, which is the point:
+	  this is the narrow exception, not NSAllowsArbitraryLoads.
+
+	  If the server is ever deployed to a public host, give it a certificate and
+	  this key can be removed outright.
+	-->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+
+	<!--
+	  The booth iPad sits on a table. Let it be used from whichever side a
+	  visitor walks up on.
+	-->
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+</dict>
+</plist>
