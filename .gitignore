@@ -124,3 +124,28 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# ---------------------------------------------------------------------------
+# Go / PitStop-Web
+# ---------------------------------------------------------------------------
+PitStop-Web/bin/
+PitStop-Web/pitstop-server
+*.test
+*.out
+
+# Environment / secrets — never commit real keys
+.env
+.env.local
+*.local.env
+
+# ---------------------------------------------------------------------------
+# macOS / Xcode / PitStop-iOS
+# ---------------------------------------------------------------------------
+.DS_Store
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+*.xcscmblueprint
+*.xccheckout
+.swiftpm/
