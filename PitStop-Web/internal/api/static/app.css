@@ -1,0 +1,331 @@
+/* Pit Stop — booth display styles.
+   Built for a large screen seen from several feet away, outdoors, in daylight. */
+
+:root {
+  --asphalt: #15191F;
+  --slate: #252B34;
+  --slate-high: #2F3741;
+  --yellow: #F7C843;
+  --red: #E7473F;
+  --white: #FFFFFF;
+  --muted: rgba(255, 255, 255, 0.62);
+  --faint: rgba(255, 255, 255, 0.12);
+
+  --radius: 14px;
+  --gap: clamp(12px, 1.6vw, 24px);
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--asphalt);
+  color: var(--white);
+  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--gap);
+  gap: var(--gap);
+}
+
+/* ---------------------------------------------------------------- masthead */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: clamp(10px, 1.2vw, 18px) clamp(14px, 1.6vw, 26px);
+  background: var(--slate);
+  border-radius: var(--radius);
+  border-top: 4px solid var(--red);
+}
+
+/* A checkered flag drawn with gradients — no image to load at the booth. */
+.masthead__flag {
+  flex: none;
+  width: clamp(44px, 4vw, 68px);
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background-color: var(--white);
+  background-image:
+    linear-gradient(45deg, var(--asphalt) 25%, transparent 25%, transparent 75%, var(--asphalt) 75%),
+    linear-gradient(45deg, var(--asphalt) 25%, transparent 25%, transparent 75%, var(--asphalt) 75%);
+  background-size: 50% 50%;
+  background-position: 0 0, 25% 25%;
+}
+
+.masthead__text { flex: 1 1 auto; min-width: 0; }
+
+.masthead h1 {
+  margin: 0;
+  font-size: clamp(28px, 4.4vw, 68px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.masthead p {
+  margin: 4px 0 0;
+  color: var(--yellow);
+  font-size: clamp(12px, 1.2vw, 19px);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.masthead__status {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(12px, 1vw, 16px);
+  color: var(--muted);
+}
+
+/* Connection state is carried by the text, not only the dot's color. */
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+.dot[data-state="live"]         { background: var(--yellow); }
+.dot[data-state="connecting"]   { background: var(--muted); animation: pulse 1.2s ease-in-out infinite; }
+.dot[data-state="polling"]      { background: var(--white); }
+.dot[data-state="offline"]      { background: var(--red); }
+
+@keyframes pulse { 50% { opacity: 0.25; } }
+
+/* ------------------------------------------------------------------ boards */
+
+.boards {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+  align-items: start;
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  background: var(--slate);
+  border-radius: var(--radius);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.board__head {
+  padding: clamp(12px, 1.4vw, 22px);
+  background: var(--red);
+}
+
+.board__head h2 {
+  margin: 0;
+  font-size: clamp(17px, 1.9vw, 31px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.board__tagline {
+  margin: 4px 0 0;
+  font-size: clamp(11px, 0.95vw, 15px);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.board__top {
+  list-style: none;
+  margin: 0;
+  padding: 6px clamp(8px, 1vw, 14px);
+  counter-reset: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(8px, 1vw, 16px);
+  padding: clamp(7px, 0.85vw, 13px) clamp(6px, 0.7vw, 10px);
+  border-bottom: 1px solid var(--faint);
+}
+.row:last-child { border-bottom: 0; }
+
+.row__pos {
+  font-size: clamp(13px, 1.25vw, 21px);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  min-width: 1.9em;
+}
+
+.row__name {
+  font-size: clamp(15px, 1.5vw, 26px);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row__score {
+  font-size: clamp(15px, 1.5vw, 26px);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--yellow);
+  white-space: nowrap;
+}
+
+/* The leader gets the trophy treatment: a label, a shape and a color, so the
+   position reads even to someone who cannot distinguish the hue. */
+.row--leader {
+  background: rgba(247, 200, 67, 0.12);
+  border-radius: 10px;
+  border-bottom-color: transparent;
+}
+.row--leader .row__pos { color: var(--yellow); }
+.row--leader .row__pos::after { content: " \1F3C6"; font-size: 0.8em; }
+
+/* A row that just appeared flashes once so the crowd sees it land. */
+@keyframes land {
+  from { background: rgba(247, 200, 67, 0.55); transform: translateX(-6px); }
+  to   { background: transparent; transform: none; }
+}
+.row--new { animation: land 900ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .row--new, .dot[data-state="connecting"] { animation: none; }
+}
+
+.board__empty {
+  padding: clamp(18px, 2.4vw, 40px) 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: clamp(13px, 1.1vw, 17px);
+}
+
+/* ------------------------------------------------------------------ recent */
+
+.board__recent {
+  margin-top: auto;
+  padding: clamp(8px, 1vw, 14px) clamp(12px, 1.3vw, 20px) clamp(6px, 0.8vw, 10px);
+  background: var(--slate-high);
+  border-top: 1px solid var(--faint);
+}
+
+.board__recent h3 {
+  margin: 0 0 6px;
+  font-size: clamp(10px, 0.85vw, 13px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.board__recent ul { list-style: none; margin: 0; padding: 0; }
+
+.recent-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: clamp(12px, 1.05vw, 17px);
+  color: rgba(255, 255, 255, 0.82);
+}
+.recent-row span:last-child {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.recent-row--empty { color: var(--muted); font-style: italic; }
+
+.board__total {
+  margin: 0;
+  padding: 6px clamp(12px, 1.3vw, 20px) clamp(10px, 1.1vw, 16px);
+  background: var(--slate-high);
+  font-size: clamp(10px, 0.85vw, 13px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------------ footer */
+
+.footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: clamp(11px, 0.95vw, 15px);
+}
+.footer p { margin: 0; }
+
+/* ------------------------------------------------------------- admin extras */
+
+.link { color: var(--yellow); text-decoration: none; font-weight: 600; }
+.link:hover { text-decoration: underline; }
+
+.btn {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  background: var(--yellow);
+  color: var(--asphalt);
+  font: inherit;
+  font-weight: 800;
+  padding: 12px 20px;
+  min-height: 48px;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
+
+.btn--danger { background: var(--red); color: var(--white); padding: 8px 14px; min-height: 40px; }
+
+.unlock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: clamp(14px, 1.6vw, 24px);
+  background: var(--slate);
+  border-radius: var(--radius);
+}
+.unlock label { font-weight: 700; }
+.unlock input {
+  flex: 1 1 220px;
+  min-height: 48px;
+  padding: 10px 14px;
+  font: inherit;
+  color: var(--white);
+  background: var(--asphalt);
+  border: 1px solid var(--faint);
+  border-radius: 10px;
+}
+.unlock input:focus-visible { outline: 3px solid var(--yellow); outline-offset: 1px; }
+.unlock__error { flex: 1 0 100%; margin: 0; color: var(--red); font-weight: 600; }
+
+.admin .row { grid-template-columns: auto 1fr auto auto; }
+.admin .board__top { padding-bottom: 12px; }
+
+/* ------------------------------------------------------------- responsive */
+
+@media (max-width: 1000px) {
+  .boards { grid-template-columns: 1fr; }
+  .board__recent { margin-top: 0; }
+}
+
+@media (max-width: 620px) {
+  .masthead { flex-wrap: wrap; }
+  .masthead__status { width: 100%; }
+}
