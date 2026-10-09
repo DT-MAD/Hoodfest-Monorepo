@@ -6,6 +6,16 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		6C4399F7307971D10066DFDA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6C4399CB307971D00066DFDA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6C4399D2307971D00066DFDA;
+			remoteInfo = "PitStop-iOS";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		6C4399D3307971D00066DFDA /* PitStop-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PitStop-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C4399F1307971D10066DFDA /* PitStop-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PitStop-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -170,16 +180,6 @@
 			targetProxy = 6C4399F7307971D10066DFDA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXContainerItemProxy section */
-		6C4399F7307971D10066DFDA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6C4399CB307971D00066DFDA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6C4399D2307971D00066DFDA;
-			remoteInfo = "PitStop-iOS";
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin XCBuildConfiguration section */
 		6C4399DC307971D10066DFDA /* Debug configuration for PBXProject "PitStop-iOS" */ = {
@@ -430,7 +430,6 @@
 				6C4399F8307971D10066DFDA /* Debug configuration for PBXNativeTarget "PitStop-iOSTests" */,
 				6C4399F9307971D10066DFDA /* Release configuration for PBXNativeTarget "PitStop-iOSTests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
