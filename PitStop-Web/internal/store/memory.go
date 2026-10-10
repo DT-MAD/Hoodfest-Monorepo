@@ -151,4 +151,61 @@ func (m *Memory) Delete(_ context.Context, id int64) error {
 	return ErrNotFound
 }
 
+// InsertMany saves several entries at once.
+func (m *Memory) InsertMany(ctx context.Context, entries []NewEntry) (int, error) {
+	for _, e := range entries {
+		if _, err := m.Insert(ctx, e); err != nil {
+			return 0, err
+		}
+	}
+	return len(entries), nil
+}
+
+// DeleteAll empties the boards.
+func (m *Memory) DeleteAll(context.Context) (int, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	n := len(m.entries)
+	m.entries = nil
+	return n, nil
+}
+
+// DeleteWhereDetail removes every entry carrying the given detail key.
+func (m *Memory) DeleteWhereDetail(_ context.Context, key string) (int, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	kept := m.entries[:0]
+	removed := 0
+	for _, e := range m.entries {
+		if _, tagged := e.Detail[key]; tagged {
+			removed++
+			continue
+		}
+		kept = append(kept, e)
+	}
+	m.entries = kept
+	return removed, nil
+}
+
+// Stats summarizes the boards.
+func (m *Memory) Stats(context.Context) (Stats, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	out := Stats{PerGame: map[game.ID]int{}}
+	for _, id := range game.All() {
+		out.PerGame[id] = 0
+	}
+	for _, e := range m.entries {
+		out.PerGame[e.Game]++
+		out.Total++
+		if _, tagged := e.Detail[seedMarker]; tagged {
+			out.Seeded++
+		}
+	}
+	return out, nil
+}
+
 var _ Store = (*Memory)(nil)

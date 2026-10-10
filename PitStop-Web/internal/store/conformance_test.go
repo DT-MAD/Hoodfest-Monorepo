@@ -114,6 +114,138 @@ func runConformance(t *testing.T, newStore func(t *testing.T) Store) {
 		}
 	})
 
+	t.Run("insert many adds every entry", func(t *testing.T) {
+		s := newStore(t)
+
+		n, err := s.InsertMany(ctx, []NewEntry{
+			{Game: game.Reaction, Name: "ONE", Score: 200, Platform: Web},
+			{Game: game.Reaction, Name: "TWO", Score: 300, Platform: Web},
+			{Game: game.Fill, Name: "THREE", Score: 10, Platform: Web},
+		})
+		if err != nil {
+			t.Fatalf("InsertMany: %v", err)
+		}
+		if n != 3 {
+			t.Errorf("InsertMany reported %d, want 3", n)
+		}
+
+		stats, err := s.Stats(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if stats.Total != 3 {
+			t.Errorf("Total = %d, want 3", stats.Total)
+		}
+		if stats.PerGame[game.Reaction] != 2 || stats.PerGame[game.Fill] != 1 {
+			t.Errorf("PerGame = %v, want 2 reaction and 1 fill", stats.PerGame)
+		}
+	})
+
+	t.Run("insert many of nothing is harmless", func(t *testing.T) {
+		s := newStore(t)
+		if n, err := s.InsertMany(ctx, nil); err != nil || n != 0 {
+			t.Errorf("InsertMany(nil) = %d, %v; want 0, nil", n, err)
+		}
+	})
+
+	t.Run("stats counts tagged entries separately", func(t *testing.T) {
+		s := newStore(t)
+
+		mustInsert(t, s, game.Reaction, "REAL", 200)
+		if _, err := s.InsertMany(ctx, []NewEntry{
+			{Game: game.Reaction, Name: "FAKE", Score: 300, Platform: Web,
+				Detail: map[string]any{"seeded": true}},
+		}); err != nil {
+			t.Fatal(err)
+		}
+
+		stats, err := s.Stats(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if stats.Total != 2 {
+			t.Errorf("Total = %d, want 2", stats.Total)
+		}
+		if stats.Seeded != 1 {
+			t.Errorf("Seeded = %d, want 1", stats.Seeded)
+		}
+	})
+
+	t.Run("delete by detail key removes only tagged entries", func(t *testing.T) {
+		s := newStore(t)
+
+		mustInsert(t, s, game.Reaction, "REAL", 200)
+		if _, err := s.InsertMany(ctx, []NewEntry{
+			{Game: game.Reaction, Name: "FAKEA", Score: 300, Platform: Web,
+				Detail: map[string]any{"seeded": true}},
+			{Game: game.Fill, Name: "FAKEB", Score: 20, Platform: Web,
+				Detail: map[string]any{"seeded": true}},
+		}); err != nil {
+			t.Fatal(err)
+		}
+
+		removed, err := s.DeleteWhereDetail(ctx, "seeded")
+		if err != nil {
+			t.Fatalf("DeleteWhereDetail: %v", err)
+		}
+		if removed != 2 {
+			t.Errorf("removed %d, want 2", removed)
+		}
+
+		stats, _ := s.Stats(ctx)
+		if stats.Total != 1 || stats.Seeded != 0 {
+			t.Errorf("after clearing the tag: total %d, seeded %d; want 1 and 0",
+				stats.Total, stats.Seeded)
+		}
+
+		// The untagged entry must be the survivor.
+		b, _ := s.Board(ctx, game.Reaction)
+		if len(b.Top) != 1 || b.Top[0].Name != "REAL" {
+			t.Errorf("the untagged entry did not survive: %v", names(b.Top))
+		}
+	})
+
+	t.Run("delete all empties every board", func(t *testing.T) {
+		s := newStore(t)
+		mustInsert(t, s, game.Reaction, "ONE", 200)
+		mustInsert(t, s, game.Fill, "TWO", 10)
+		mustInsert(t, s, game.PitStop, "THREE", 2000)
+
+		n, err := s.DeleteAll(ctx)
+		if err != nil {
+			t.Fatalf("DeleteAll: %v", err)
+		}
+		if n != 3 {
+			t.Errorf("DeleteAll reported %d, want 3", n)
+		}
+
+		stats, _ := s.Stats(ctx)
+		if stats.Total != 0 {
+			t.Errorf("Total = %d after DeleteAll, want 0", stats.Total)
+		}
+
+		// Deleting again is harmless.
+		if n, err := s.DeleteAll(ctx); err != nil || n != 0 {
+			t.Errorf("second DeleteAll = %d, %v; want 0, nil", n, err)
+		}
+	})
+
+	t.Run("stats on an empty store reports every game", func(t *testing.T) {
+		s := newStore(t)
+		stats, err := s.Stats(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if stats.Total != 0 || stats.Seeded != 0 {
+			t.Errorf("empty store: total %d, seeded %d", stats.Total, stats.Seeded)
+		}
+		for _, id := range game.All() {
+			if _, ok := stats.PerGame[id]; !ok {
+				t.Errorf("PerGame is missing %q, so the dashboard would show a gap", id)
+			}
+		}
+	})
+
 	t.Run("delete removes the entry and reports a missing one", func(t *testing.T) {
 		s := newStore(t)
 		e := mustInsert(t, s, game.Reaction, "OOPS", 250)

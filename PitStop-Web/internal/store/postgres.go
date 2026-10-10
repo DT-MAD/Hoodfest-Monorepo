@@ -208,3 +208,93 @@ func orEmpty(m map[string]any) map[string]any {
 
 // Postgres satisfies Store.
 var _ Store = (*Postgres)(nil)
+
+// InsertMany saves several entries in one transaction, so a half-written seed
+// cannot leave the boards in a strange state.
+func (p *Postgres) InsertMany(ctx context.Context, entries []NewEntry) (int, error) {
+	if len(entries) == 0 {
+		return 0, nil
+	}
+
+	tx, err := p.pool.Begin(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("starting a transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	const q = `
+		INSERT INTO entries (game, player_name, score, platform, detail)
+		VALUES ($1, $2, $3, $4, $5)`
+
+	for _, e := range entries {
+		detail, err := json.Marshal(orEmpty(e.Detail))
+		if err != nil {
+			return 0, fmt.Errorf("encoding detail: %w", err)
+		}
+		if _, err := tx.Exec(ctx, q, string(e.Game), e.Name, e.Score, string(e.Platform), detail); err != nil {
+			return 0, fmt.Errorf("inserting entry for %s: %w", e.Name, err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return 0, fmt.Errorf("committing: %w", err)
+	}
+	return len(entries), nil
+}
+
+// DeleteAll empties the boards.
+func (p *Postgres) DeleteAll(ctx context.Context) (int, error) {
+	tag, err := p.pool.Exec(ctx, `DELETE FROM entries`)
+	if err != nil {
+		return 0, fmt.Errorf("deleting every entry: %w", err)
+	}
+	return int(tag.RowsAffected()), nil
+}
+
+// DeleteWhereDetail removes every entry carrying the given detail key.
+func (p *Postgres) DeleteWhereDetail(ctx context.Context, key string) (int, error) {
+	tag, err := p.pool.Exec(ctx, `DELETE FROM entries WHERE detail ? $1`, key)
+	if err != nil {
+		return 0, fmt.Errorf("deleting entries tagged %q: %w", key, err)
+	}
+	return int(tag.RowsAffected()), nil
+}
+
+// Stats summarizes the boards.
+func (p *Postgres) Stats(ctx context.Context) (Stats, error) {
+	out := Stats{PerGame: map[game.ID]int{}}
+	for _, id := range game.All() {
+		out.PerGame[id] = 0
+	}
+
+	rows, err := p.pool.Query(ctx, `SELECT game, count(*) FROM entries GROUP BY game`)
+	if err != nil {
+		return Stats{}, fmt.Errorf("counting entries: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id game.ID
+		var n int
+		if err := rows.Scan(&id, &n); err != nil {
+			return Stats{}, err
+		}
+		out.PerGame[id] = n
+		out.Total += n
+	}
+	if err := rows.Err(); err != nil {
+		return Stats{}, err
+	}
+
+	if err := p.pool.QueryRow(ctx,
+		`SELECT count(*) FROM entries WHERE detail ? $1`, seedMarker,
+	).Scan(&out.Seeded); err != nil {
+		return Stats{}, fmt.Errorf("counting seeded entries: %w", err)
+	}
+
+	return out, nil
+}
+
+// seedMarker is the detail key the seeder tags its rows with. Declared here
+// rather than imported so that store does not depend on the seed package.
+const seedMarker = "seeded"
