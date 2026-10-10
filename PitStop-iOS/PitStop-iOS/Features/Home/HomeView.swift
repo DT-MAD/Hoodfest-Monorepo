@@ -99,7 +99,9 @@ struct HomeView: View {
         .accessibilityLabel("Pit Stop, by Dixie Tech. Pick a game.")
         .accessibilityHint("Press and hold for booth settings")
         // Hidden from visitors, obvious to an operator who has been told.
-        .onLongPressGesture(minimumDuration: 1.2) {
+        // Matches Android's long-press duration: an operator who has been told
+        // "press and hold" should not have to be told how long for.
+        .onLongPressGesture(minimumDuration: 0.6) {
             Haptics.tap()
             isShowingSettings = true
         }

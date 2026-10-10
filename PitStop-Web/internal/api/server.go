@@ -58,7 +58,13 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /api/scores", requireKey("X-API-Key", s.cfg.APIKey, s.handleSubmit))
 
 	// Moderation, from the booth operator.
-	mux.HandleFunc("DELETE /api/admin/entries/{id}", requireKey("X-Admin-Key", s.cfg.AdminKey, s.handleDelete))
+	admin := func(h http.HandlerFunc) http.HandlerFunc {
+		return requireKey("X-Admin-Key", s.cfg.AdminKey, h)
+	}
+	mux.HandleFunc("GET /api/admin/stats", admin(s.handleAdminStats))
+	mux.HandleFunc("POST /api/admin/seed", admin(s.handleSeed))
+	mux.HandleFunc("DELETE /api/admin/entries", admin(s.handleReset))
+	mux.HandleFunc("DELETE /api/admin/entries/{id}", admin(s.handleDelete))
 
 	mux.HandleFunc("GET /healthz", s.handleHealth)
 

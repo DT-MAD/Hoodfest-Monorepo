@@ -23,7 +23,7 @@ every platform.
 
 | Directory | What it is | Build |
 | --------- | ---------- | ----- |
-| [`PitStop-Web/`](PitStop-Web) | Go REST API + live leaderboard display | `make run` |
+| [`PitStop-Web/`](PitStop-Web) | Go REST API, live leaderboard display and operator dashboard | `make run` |
 | [`PitStop-iOS/`](PitStop-iOS) | SwiftUI app, iPad-first | open in Xcode |
 | [`PitStop-Android/`](PitStop-Android) | Jetpack Compose app, tablet-first | `./gradlew assembleDebug` |
 

@@ -78,6 +78,13 @@ const (
 	RecentN = 3
 )
 
+// Stats summarizes what is on the boards, for the moderation dashboard.
+type Stats struct {
+	Total   int             `json:"total"`
+	Seeded  int             `json:"seeded"`
+	PerGame map[game.ID]int `json:"perGame"`
+}
+
 // Store is the persistence interface. The API layer depends on this rather
 // than on Postgres, which lets the handler tests run against an in-memory fake.
 type Store interface {
@@ -93,6 +100,21 @@ type Store interface {
 
 	// Delete removes an entry, returning ErrNotFound if it was not there.
 	Delete(ctx context.Context, id int64) error
+
+	// InsertMany saves several entries at once. Used to seed a board.
+	InsertMany(ctx context.Context, entries []NewEntry) (int, error)
+
+	// DeleteAll removes every entry and returns how many went, resetting the
+	// boards for a fresh event.
+	DeleteAll(ctx context.Context) (int, error)
+
+	// DeleteWhereDetail removes every entry whose detail has key set, and
+	// returns how many went. Used to replace seeded rows rather than stack
+	// another set on top of them.
+	DeleteWhereDetail(ctx context.Context, key string) (int, error)
+
+	// Stats summarizes the boards for the moderation dashboard.
+	Stats(ctx context.Context) (Stats, error)
 
 	// Ping reports whether the backing store is reachable.
 	Ping(ctx context.Context) error

@@ -3,22 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pit Stop Moderation</title>
+<title>Pit Stop Dashboard</title>
 <link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%2315191F'/><path d='M0 0h4v4H0zm8 0h4v4H8zM4 4h4v4H4zm8 0h4v4h-4zM0 8h4v4H0zm8 0h4v4H8zM4 12h4v4H4zm8 0h4v4h-4z' fill='%23F7C843'/></svg>">
 </head>
 <body class="admin">
 
 <header class="masthead">
   <div class="masthead__flag" aria-hidden="true"></div>
   <div class="masthead__text">
-    <h1>Moderation</h1>
-    <p>Remove anything the word filter missed</p>
+    <h1>Dashboard</h1>
+    <p>Booth operator controls</p>
   </div>
   <div class="masthead__status">
     <a class="link" href="/">&larr; Back to the board</a>
   </div>
 </header>
 
+<!-- Locked until the admin key checks out. -->
 <form id="unlock" class="unlock">
   <label for="admin-key">Admin key</label>
   <input id="admin-key" type="password" autocomplete="off" placeholder="ADMIN_KEY" required>
@@ -26,7 +28,72 @@
   <p id="unlock-error" class="unlock__error" role="alert" hidden></p>
 </form>
 
-<main id="admin-boards" class="boards" hidden></main>
+<main id="dashboard" hidden>
+
+  <section class="panel" aria-labelledby="stats-title">
+    <h2 id="stats-title">At a glance</h2>
+    <div id="stats" class="stats"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="actions-title">
+    <h2 id="actions-title">Actions</h2>
+
+    <div class="action">
+      <div class="action__text">
+        <h3>Load starter scores</h3>
+        <p>
+          Fills all three boards with ten times apiece so the first visitor of
+          the day has something to beat. The scores are deliberately soft — one
+          good time at the top, easy going after that. Loading again replaces
+          the previous set rather than stacking another one on top.
+        </p>
+      </div>
+      <button id="seed" type="button" class="btn">Load starter scores</button>
+    </div>
+
+    <div class="action action--danger">
+      <div class="action__text">
+        <h3>Reset everything</h3>
+        <p>
+          Deletes every score on every board, starter and real alike.
+          <strong>This cannot be undone.</strong>
+        </p>
+      </div>
+      <button id="reset" type="button" class="btn btn--danger">Reset everything</button>
+    </div>
+
+    <p id="action-status" class="action__status" role="status"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="entries-title">
+    <h2 id="entries-title">Entries</h2>
+    <p class="panel__hint">
+      The top ten and the most recent runs on each board — everything currently
+      visible on the display. Remove anything the word filter missed.
+    </p>
+    <div id="admin-boards" class="boards"></div>
+  </section>
+
+</main>
+
+<!-- Reset confirmation. Deliberately requires typing the word: the dashboard
+     is often left open on a laptop at a booth, and a mis-click must not wipe
+     the day's scores. -->
+<dialog id="confirm-reset" class="dialog">
+  <form method="dialog">
+    <h2>Delete every score?</h2>
+    <p>
+      This removes all <strong><span id="confirm-count">0</span></strong> entries
+      from every board, starter scores and real ones alike. It cannot be undone.
+    </p>
+    <label for="confirm-input">Type <code>RESET</code> to confirm</label>
+    <input id="confirm-input" type="text" autocomplete="off" placeholder="RESET">
+    <div class="dialog__actions">
+      <button value="cancel" class="btn btn--quiet">Cancel</button>
+      <button id="confirm-go" value="confirm" class="btn btn--danger" disabled>Delete everything</button>
+    </div>
+  </form>
+</dialog>
 
 <script src="/static/admin.js"></script>
 </body>

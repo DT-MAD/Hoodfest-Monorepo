@@ -10,6 +10,7 @@ import (
 
 	"edu.dixietech.pitstop/internal/game"
 	"edu.dixietech.pitstop/internal/name"
+	"edu.dixietech.pitstop/internal/seed"
 	"edu.dixietech.pitstop/internal/store"
 )
 
@@ -238,4 +239,80 @@ func capitalize(s string) string {
 		r[0] -= 'a' - 'A'
 	}
 	return string(r)
+}
+
+// adminStatsResponse is the dashboard's summary, and doubles as the call the
+// admin page uses to check its key before showing anything.
+type adminStatsResponse struct {
+	Stats  store.Stats  `json:"stats"`
+	Boards store.Boards `json:"boards"`
+}
+
+// handleAdminStats reports what is on the boards.
+func (s *Server) handleAdminStats(w http.ResponseWriter, r *http.Request) {
+	stats, err := s.store.Stats(r.Context())
+	if err != nil {
+		s.log.Error("loading admin stats", "error", err)
+		writeError(w, http.StatusInternalServerError, "store_failed", "The statistics could not be loaded.")
+		return
+	}
+
+	boards, err := s.store.Boards(r.Context())
+	if err != nil {
+		s.log.Error("loading boards for admin", "error", err)
+		writeError(w, http.StatusInternalServerError, "store_failed", "The leaderboards could not be loaded.")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, adminStatsResponse{Stats: stats, Boards: boards})
+}
+
+// handleSeed loads the starter scores.
+//
+// Seeding twice replaces the previous starter set rather than stacking another
+// one on top of it, so an operator can press the button as often as they like.
+func (s *Server) handleSeed(w http.ResponseWriter, r *http.Request) {
+	replaced, err := s.store.DeleteWhereDetail(r.Context(), seed.Marker)
+	if err != nil {
+		s.log.Error("clearing previous seed", "error", err)
+		writeError(w, http.StatusInternalServerError, "store_failed", "The previous starter scores could not be cleared.")
+		return
+	}
+
+	inserted, err := s.store.InsertMany(r.Context(), seed.Entries())
+	if err != nil {
+		s.log.Error("seeding the boards", "error", err)
+		writeError(w, http.StatusInternalServerError, "store_failed", "The starter scores could not be added.")
+		return
+	}
+
+	s.log.Info("boards seeded by an operator", "inserted", inserted, "replaced", replaced)
+	s.publishBoards(r.Context())
+
+	writeJSON(w, http.StatusOK, map[string]int{"inserted": inserted, "replaced": replaced})
+}
+
+// handleReset empties every board.
+//
+// This is irreversible, so it refuses unless the caller confirms deliberately.
+// The admin key alone is not enough: at a booth the dashboard is often left
+// open on a laptop, and a mis-click should not wipe the day's scores.
+func (s *Server) handleReset(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("confirm") != "RESET" {
+		writeError(w, http.StatusBadRequest, "confirmation_required",
+			`Add ?confirm=RESET to wipe every score. This cannot be undone.`)
+		return
+	}
+
+	deleted, err := s.store.DeleteAll(r.Context())
+	if err != nil {
+		s.log.Error("resetting the boards", "error", err)
+		writeError(w, http.StatusInternalServerError, "store_failed", "The boards could not be reset.")
+		return
+	}
+
+	s.log.Warn("every score deleted by an operator", "deleted", deleted)
+	s.publishBoards(r.Context())
+
+	writeJSON(w, http.StatusOK, map[string]int{"deleted": deleted})
 }
