@@ -24,7 +24,7 @@ struct FillGameView: View {
                 pumpButton
             }
             .padding(24)
-            .frame(maxWidth: 620)
+            .frame(maxWidth: .infinity)
 
             if model.phase == .cancelled {
                 PanelBackdrop()

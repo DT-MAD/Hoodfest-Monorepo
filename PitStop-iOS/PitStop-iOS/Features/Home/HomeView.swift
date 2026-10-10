@@ -35,7 +35,6 @@ struct HomeView: View {
                         programNote
                     }
                     .padding(22)
-                    .frame(maxWidth: 1000)
                     .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }
             }
