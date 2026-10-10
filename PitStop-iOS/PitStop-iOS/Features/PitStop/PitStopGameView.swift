@@ -23,7 +23,7 @@ struct PitStopGameView: View {
                 footer
             }
             .padding(24)
-            .frame(maxWidth: 700)
+            .frame(maxWidth: .infinity)
 
             if model.phase == .cancelled {
                 PanelBackdrop()
@@ -111,31 +111,44 @@ struct PitStopGameView: View {
 
     // MARK: - The car
 
+    /// How wide the play area is relative to its height. A top-down car is
+    /// markedly taller than it is wide, and holding the proportion keeps the
+    /// silhouette readable and all four tires within easy reach.
+    private static let carAspectRatio: CGFloat = 0.66
+
     /// A top-down car with a tire at each corner. Tapping the body — anywhere
     /// that is not an un-changed tire — costs a second.
+    ///
+    /// The play area keeps a car-like proportion rather than stretching to fill
+    /// the screen: filling it turns the silhouette into a featureless slab and
+    /// flings the tires into the far corners.
     private var carArea: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
-                .fill(Theme.slate)
+        GeometryReader { proxy in
+            ZStack {
+                RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                    .fill(Theme.slate)
 
-            carBody
+                carBody(in: proxy.size)
 
-            VStack(spacing: 0) {
-                HStack {
-                    tire(.frontLeft)
+                VStack(spacing: 0) {
+                    HStack {
+                        tire(.frontLeft)
+                        Spacer()
+                        tire(.frontRight)
+                    }
                     Spacer()
-                    tire(.frontRight)
+                    HStack {
+                        tire(.rearLeft)
+                        Spacer()
+                        tire(.rearRight)
+                    }
                 }
-                Spacer()
-                HStack {
-                    tire(.rearLeft)
-                    Spacer()
-                    tire(.rearRight)
-                }
+                .padding(20)
             }
-            .padding(26)
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .frame(maxHeight: .infinity)
+        .aspectRatio(Self.carAspectRatio, contentMode: .fit)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         // Registered after the tires, so a tap that lands on a tire is handled
         // there and only a genuine miss reaches this.
         .contentShape(Rectangle())
@@ -146,24 +159,32 @@ struct PitStopGameView: View {
         .accessibilityElement(children: .contain)
     }
 
-    private var carBody: some View {
-        RoundedRectangle(cornerRadius: 46, style: .continuous)
+    /// The car silhouette. Every dimension is a fraction of the play area, so
+    /// the car keeps its shape on a phone and on a large iPad alike.
+    private func carBody(in size: CGSize) -> some View {
+        let bodyWidth = size.width * 0.66
+        let bodyHeight = size.height * 0.92
+        let detailWidth = bodyWidth * 0.78
+
+        return RoundedRectangle(cornerRadius: bodyWidth * 0.2, style: .continuous)
             .fill(Theme.slateHigh)
-            .overlay(
-                VStack(spacing: 10) {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Theme.asphalt.opacity(0.55))
-                        .frame(height: 46)
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Theme.asphalt.opacity(0.35))
-                        .frame(height: 70)
+            .frame(width: bodyWidth, height: bodyHeight)
+            .overlay {
+                // Windshield, roof, rear window — enough to read as a car from
+                // a step away without pretending to be an illustration.
+                VStack(spacing: bodyHeight * 0.03) {
+                    carDetail(width: detailWidth, height: bodyHeight * 0.10, opacity: 0.55)
+                    carDetail(width: detailWidth, height: bodyHeight * 0.26, opacity: 0.30)
+                    carDetail(width: detailWidth, height: bodyHeight * 0.10, opacity: 0.45)
                 }
-                .padding(.horizontal, 34)
-                .padding(.vertical, 56)
-            )
-            .padding(.horizontal, 78)
-            .padding(.vertical, 18)
+            }
             .accessibilityHidden(true)
+    }
+
+    private func carDetail(width: CGFloat, height: CGFloat, opacity: Double) -> some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(Theme.asphalt.opacity(opacity))
+            .frame(width: width, height: height)
     }
 
     private func tire(_ tire: Tire) -> some View {
@@ -209,7 +230,6 @@ struct PitStopGameView: View {
                     model.start()
                 }
             }
-            .frame(maxWidth: 420)
         }
     }
 }

@@ -24,7 +24,6 @@ struct LeaderboardView: View {
                 }
             }
             .padding(20)
-            .frame(maxWidth: 700)
             .frame(maxWidth: .infinity)
         }
         .pitStopBackground()
